@@ -63,11 +63,11 @@ repo_owner="unifreq"
 repo_branch="main"
 build_kernel=("6.1.1" "5.15.1")
 # Set whether to use the latest kernel, options: [ true / false ]
-auto_kernel="true"
+auto_kernel="false"
 # Set whether to apply custom kernel patches, options: [ true / false ]
 auto_patch="false"
 # Set custom signature for the kernel
-custom_name="-ophub"
+# custom_name="-ophub"
 # Set the kernel compile object, options: [ dtbs / all ]
 package_list="all"
 
@@ -153,7 +153,7 @@ init_var() {
         -n | --customName)
             if [[ -n "${2}" ]]; then
                 custom_name="${2// /}"
-                [[ "${custom_name:0:1}" != "-" ]] && custom_name="-${custom_name}"
+                [[ "${custom_name:0:1}" != "-" ]] && custom_name=""
                 shift
             else
                 error_msg "Invalid -n parameter [ ${2} ]!"
@@ -428,7 +428,7 @@ compile_env() {
     echo -e "${STEPS} Start checking local compilation environments..."
 
     # Get kernel output name
-    kernel_outname="${kernel_version}${custom_name}"
+    kernel_outname="${kernel_version}"
     echo -e "${INFO} Compile kernel output name: [ ${kernel_outname} ]"
 
     # Create a temp directory
@@ -441,17 +441,17 @@ compile_env() {
 
     # Set cross compilation parameters
     export ARCH="arm64"
-    export LOCALVERSION="${custom_name}"
+    # export LOCALVERSION="${custom_name}"
 
     # Show variable
     echo -e "${INFO} ARCH: [ ${ARCH} ]"
-    echo -e "${INFO} LOCALVERSION: [ ${LOCALVERSION} ]"
+    # echo -e "${INFO} LOCALVERSION: [ ${LOCALVERSION} ]"
     echo -e "${INFO} CROSS_COMPILE: [ ${CROSS_COMPILE} ]"
     echo -e "${INFO} CC: [ ${CC} ]"
     echo -e "${INFO} LD: [ ${LD} ]"
 
     # Set generic make string
-    MAKE_SET_STRING=" ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} LD=${LD} ${MFLAGS} LOCALVERSION=${LOCALVERSION} "
+    MAKE_SET_STRING=" ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} LD=${LD} ${MFLAGS} "
 
     # Make clean/mrproper
     make ${MAKE_SET_STRING} mrproper
@@ -465,7 +465,7 @@ compile_env() {
         echo -e "${INFO} Use the .config file in the current directory."
     fi
     # Clear kernel signature
-    sed -i "s|CONFIG_LOCALVERSION=.*|CONFIG_LOCALVERSION=\"\"|" .config
+    # sed -i "s|CONFIG_LOCALVERSION=.*|CONFIG_LOCALVERSION=\"\"|" .config
 
     # Enable/Disabled Linux Kernel Clang LTO
     [[ "${toolchain_name}" == "clang" ]] && {
@@ -726,8 +726,6 @@ echo -e "${INFO} Kernel compilation toolchain: [ ${toolchain_name} ]"
 echo -e "${INFO} Kernel from: [ ${code_owner} ]"
 echo -e "${INFO} Kernel patch: [ ${auto_patch} ]"
 echo -e "${INFO} Kernel Package: [ ${package_list} ]"
-echo -e "${INFO} kernel signature: [ ${custom_name} ]"
-echo -e "${INFO} Latest kernel version: [ ${auto_kernel} ]"
 echo -e "${INFO} Kernel List: [ $(echo ${build_kernel[*]} | xargs) ] \n"
 
 # Show server start information
